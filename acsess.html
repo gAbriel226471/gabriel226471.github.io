@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Access Code</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 80px; }
+    input { padding: 10px; font-size: 18px; }
+    button { padding: 10px 20px; font-size: 18px; }
+    #error { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>Enter Access Code</h1>
+
+<input id="codeInput" type="password" placeholder="7-digit code">
+<button onclick="checkCode()">Enter</button>
+
+<p id="error"></p>
+
+<script>
+  // change this to your secret code
+  const ACCESS_CODE = apples1983
+
+  function checkCode() {
+    const input = document.getElementById("codeInput").value;
+    if (input === ACCESS_CODE) {
+      // go to your game menu page
+      window.location.href = "games.html";
+    } else {
+      document.getElementById("error").textContent = "Incorrect code";
+    }
+  }
+</script>
+
+</body>
+</html>
