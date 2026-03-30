@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flappy Bird</title>
+  <style>
+    body {
+      background: #70c5ce;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial;
+      flex-direction: column;
+    }
+    canvas {
+      background: #4ec0ca;
+      border: 3px solid #333;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Flappy Bird</h1>
+<canvas id="game" width="400" height="500"></canvas>
+
+<script>
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  let bird = { x: 50, y: 200, width: 20, height: 20, gravity: 0, jump: -6 };
+  let pipes = [];
+  let frame = 0;
+  let gameOver = false;
+
+  function resetGame() {
+    bird.y = 200;
+    bird.gravity = 0;
+    pipes = [];
+    frame = 0;
+    gameOver = false;
+  }
+
+  document.addEventListener("keydown", () => {
+    if (gameOver) {
+      resetGame();
+      return;
+    }
+    bird.gravity = bird.jump;
+  });
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Bird physics
+    bird.gravity += 0.3;
+    bird.y += bird.gravity;
+
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+
+    // Add pipes
+    if (frame % 90 === 0) {
+      let gap = 120;
+      let topHeight = Math.random() * 250 + 20;
+      pipes.push({
+        x: 400,
+        top: topHeight,
+        bottom: topHeight + gap
+      });
+    }
+
+    // Move and draw pipes
+    ctx.fillStyle = "green";
+    pipes.forEach(pipe => {
+      pipe.x -= 2;
+
+      ctx.fillRect(pipe.x, 0, 40, pipe.top);
+      ctx.fillRect(pipe.x, pipe.bottom, 40, 500 - pipe.bottom);
+
+      // Collision
+      if (
+        bird.x < pipe.x + 40 &&
+        bird.x + bird.width > pipe.x &&
+        (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)
+      ) {
+        gameOver = true;
+      }
+    });
+
+    // Remove off-screen pipes
+    pipes = pipes.filter(pipe => pipe.x > -40);
+
+    // Ground / ceiling collision
+    if (bird.y > 480 || bird.y < 0) {
+      gameOver = true;
+    }
+
+    if (gameOver) {
+      ctx.fillStyle = "white";
+      ctx.font = "30px Arial";
+      ctx.fillText("Game Over!", 120, 250);
+      ctx.font = "20px Arial";
+      ctx.fillText("Press any key to restart", 100, 290);
+      return;
+    }
+
+    frame++;
+    requestAnimationFrame(gameLoop);
+  }
+
+  gameLoop();
+</script>
+
+</body>
+</html>
