@@ -3,17 +3,43 @@
 <head>
   <title>Game Menu</title>
   <style>
-    body { font-family: Arial; text-align: center; margin-top: 50px; }
-    a { display: block; margin: 20px; font-size: 24px; text-decoration: none; color: blue; }
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 60px;
+      background: #f2f2f2;
+    }
+    h1 {
+      font-size: 40px;
+      margin-bottom: 40px;
+    }
+    .game-link {
+      display: block;
+      width: 250px;
+      margin: 15px auto;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      font-size: 22px;
+      text-decoration: none;
+      color: black;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: 0.2s;
+    }
+    .game-link:hover {
+      background: #dcdcdc;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
 
 <h1>Game Menu</h1>
 
-<a href="cookie.html">🍪 Cookie Clicker</a>
-<a href="snake.html">🐍 Snake Game</a>
-<a href="pong.html">🏓 Pong</a>
+<a class="game-link" href="cookie.html">🍪 Cookie Clicker</a>
+<a class="game-link" href="snake.html">🐍 Snake</a>
+<a class="game-link" href="pong.html">🏓 Pong</a>
 
 </body>
 </html>
+
