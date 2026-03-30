@@ -1,3 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake Game</title>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: white;
+      font-family: Arial;
+      flex-direction: column;
+    }
+    canvas {
+      background: #222;
+      border: 3px solid #555;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Snake</h1>
+<canvas id="game" width="400" height="400"></canvas>
+
 <script>
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
@@ -18,7 +45,7 @@
     if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
   });
 
-  // ⭐ NEW: Reset function (this is what restarts the game)
+  // Reset the game without reloading the page
   function resetGame() {
     snake = [{ x: 200, y: 200 }];
     direction = "RIGHT";
@@ -43,15 +70,15 @@
     if (direction === "LEFT") head.x -= box;
     if (direction === "RIGHT") head.x += box;
 
-    // Game over (walls)
+    // Wall collision
     if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
-      resetGame(); // ⭐ FIXED
+      resetGame();
     }
 
-    // Game over (self collision)
-    for (let i = 0; i < snake.length; i++) {
+    // Self collision
+    for (let i = 1; i < snake.length; i++) {
       if (head.x === snake[i].x && head.y === snake[i].y) {
-        resetGame(); // ⭐ FIXED
+        resetGame();
       }
     }
 
@@ -77,3 +104,5 @@
   setInterval(gameLoop, 120);
 </script>
 
+</body>
+</html>
