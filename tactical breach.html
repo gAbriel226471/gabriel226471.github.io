@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tactical Breach</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial;
+    }
+    canvas {
+      background: #222;
+      border: 3px solid #555;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="game" width="600" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 60, y: 200, r: 10, speed: 2 };
+let enemies = [
+  { x: 500, y: 150, r: 10, alive: true },
+  { x: 520, y: 260, r: 10, alive: true }
+];
+
+let bullets = [];
+let walls = [
+  { x: 250, y: 100, w: 10, h: 200, breakable: true, hp: 3 },
+  { x: 350, y: 100, w: 10, h: 200, breakable: false }
+];
+
+let keys = {};
+let mouse = { x: 0, y: 0 };
+let gameOver = false;
+let win = false;
+
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener("click", () => {
+  if (gameOver) return;
+  const angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    dx: Math.cos(angle) * 5,
+    dy: Math.sin(angle) * 5
+  });
+});
+
+function update() {
+  if (gameOver) return;
+
+  if (keys["w"]) player.y -= player.speed;
+  if (keys["s"]) player.y += player.speed;
+  if (keys["a"]) player.x -= player.speed;
+  if (keys["d"]) player.x += player.speed;
+
+  bullets.forEach(b => {
+    b.x += b.dx;
+    b.y += b.dy;
+  });
+
+  bullets = bullets.filter(b => b.x > 0 && b.x < 600 && b.y > 0 && b.y < 400);
+
+  bullets.forEach((b, bi) => {
+    walls.forEach(w => {
+      if (
+        b.x > w.x && b.x < w.x + w.w &&
+        b.y > w.y && b.y < w.y + w.h
+      ) {
+        if (w.breakable) {
+          w.hp--;
+          if (w.hp <= 0) w.dead = true;
+        }
+        bullets.splice(bi, 1);
+      }
+    });
+  });
+
+  walls = walls.filter(w => !w.dead);
+
+  bullets.forEach((b, bi) => {
+    enemies.forEach((e, ei) => {
+      if (!e.alive) return;
+      const dx = b.x - e.x;
+      const dy = b.y - e.y;
+      if (Math.hypot(dx, dy) < e.r + 3) {
+        e.alive = false;
+        bullets.splice(bi, 1);
+      }
+    });
+  });
+
+  if (enemies.every(e => !e.alive)) {
+    gameOver = true;
+    win = true;
+  }
+
+  walls.forEach(w => {
+    if (
+      player.x > w.x - player.r &&
+      player.x < w.x + w.w + player.r &&
+      player.y > w.y &&
+      player.y < w.y + w.h
+    ) {
+      if (player.x < w.x) player.x = w.x - player.r;
+      else if (player.x > w.x + w.w) player.x = w.x + w.w + player.r;
+    }
+  });
+
+  if (player.x > 560 && enemies.some(e => e.alive)) {
+    gameOver = true;
+    win = false;
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 600, 400);
+
+  ctx.fillStyle = "#333";
+  ctx.fillRect(0, 0, 600, 400);
+
+  ctx.fillStyle = "#444";
+  ctx.fillRect(540, 150, 40, 100);
+
+  walls.forEach(w => {
+    ctx.fillStyle = w.breakable ? "#aa7733" : "#777";
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+    if (w.breakable) {
+      ctx.fillStyle = "white";
+      ctx.font = "10px Arial";
+      ctx.fillText(w.hp, w.x + 2, w.y + 12);
+    }
+  });
+
+  ctx.fillStyle = "cyan";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "yellow";
+  bullets.forEach(b => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  enemies.forEach(e => {
+    if (!e.alive) return;
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  if (gameOver) {
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText(win ? "Attackers win!" : "Defenders held!", 180, 200);
+    ctx.font = "16px Arial";
+    ctx.fillText("Refresh to play again", 210, 230);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
