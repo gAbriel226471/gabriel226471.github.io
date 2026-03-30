@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Zombie Survival</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+      font-family: Arial;
+      color: white;
+    }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ui">Score: <span id="score">0</span></div>
+<canvas id="game" width="800" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const scoreEl = document.getElementById("score");
+
+let player = { x: 400, y: 300, size: 20, speed: 3 };
+let bullets = [];
+let zombies = [];
+let score = 0;
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const angle = Math.atan2(my - player.y, mx - player.x);
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    dx: Math.cos(angle) * 6,
+    dy: Math.sin(angle) * 6
+  });
+});
+
+function spawnZombie() {
+  const side = Math.floor(Math.random() * 4);
+  let x, y;
+
+  if (side === 0) { x = 0; y = Math.random() * 600; }
+  if (side === 1) { x = 800; y = Math.random() * 600; }
+  if (side === 2) { x = Math.random() * 800; y = 0; }
+  if (side === 3) { x = Math.random() * 800; y = 600; }
+
+  zombies.push({ x, y, size: 25, speed: 1.2 });
+}
+
+setInterval(spawnZombie, 800);
+
+function update() {
+  if (keys["w"]) player.y -= player.speed;
+  if (keys["s"]) player.y += player.speed;
+  if (keys["a"]) player.x -= player.speed;
+  if (keys["d"]) player.x += player.speed;
+
+  bullets.forEach(b => {
+    b.x += b.dx;
+    b.y += b.dy;
+  });
+
+  zombies.forEach(z => {
+    const angle = Math.atan2(player.y - z.y, player.x - z.x);
+    z.x += Math.cos(angle) * z.speed;
+    z.y += Math.sin(angle) * z.speed;
+  });
+
+  bullets = bullets.filter(b => b.x > 0 && b.x < 800 && b.y > 0 && b.y < 600);
+
+  zombies.forEach((z, zi) => {
+    bullets.forEach((b, bi) => {
+      const dx = b.x - z.x;
+      const dy = b.y - z.y;
+      if (Math.hypot(dx, dy) < z.size) {
+        zombies.splice(zi, 1);
+        bullets.splice(bi, 1);
+        score++;
+        scoreEl.textContent = score;
+      }
+    });
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 800, 600);
+
+  ctx.fillStyle = "cyan";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "yellow";
+  bullets.forEach(b => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "red";
+  zombies.forEach(z => {
+    ctx.beginPath();
+    ctx.arc(z.x, z.y, z.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
